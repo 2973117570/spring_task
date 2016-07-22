@@ -1,0 +1,79 @@
+说明：此jar的作用是封装了HTTP 的Helper服务，提供post操作
+/**
+*	Copyright © 1997 - 2015 Xinyi Tech. All Rights Reserved 
+*/
+package com.xinyi.xframe.dataserver_util;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
+public class TestInsertBulkDataUtils {
+	
+	public static void main(String[] args) {
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String url = "http://10.235.156.102:8072/insert/bulkInsert";
+		List<Map<String,Object>> lists = new ArrayList<Map<String,Object>>();
+		Map<String, Object> paramsMap = new IdentityHashMap<String, Object>();
+		//鉴权内容
+		String accessKey = "xinyi";
+		String accessSecurity = "xinyi@xdata";
+		
+		//数据库、表名，记录信息
+		String databaseName = "TESTDB";
+		String tableName = "vehicle";
+		
+		//记录1 信息
+		Map<String,Object> paramsMap1 = new IdentityHashMap<String, Object>();
+		paramsMap1.put("car_id", "粤B12345");
+		paramsMap1.put("xh", "1620715740122");
+		paramsMap1.put("passing_time",sdf.format(new Date()) );  //日期类型，请格式化
+		paramsMap1.put("create_time", sdf.format(new Date()));
+		lists.add(paramsMap1);
+		
+		//记录2 信息
+		Map<String,Object> paramsMap2 = new IdentityHashMap<String, Object>();
+		paramsMap2.put("car_id", "粤B54321");
+		paramsMap2.put("xh", "1620715740123");
+		paramsMap2.put("passing_time",sdf.format(new Date()) );
+		paramsMap2.put("create_time", sdf.format(new Date()));
+		lists.add(paramsMap2);
+		
+		int resultInt = InsertBulkDataUtil.insertBulkData(url, accessKey, accessSecurity, databaseName, tableName, lists);
+		System.out.println("the result is :" + resultInt);
+	}
+}
+
+
+
+需要依赖的jar包如下：
+	
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <httpcomponents.version>4.3.4</httpcomponents.version>
+    <fastjson.version>1.2.7</fastjson.version>
+  </properties>
+
+  <dependencies>
+   	<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpcomponents.version}</version>
+	</dependency>
+
+	<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>${httpcomponents.version}</version>
+	</dependency>
+	
+	<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
+	</dependency>
+  </dependencies>

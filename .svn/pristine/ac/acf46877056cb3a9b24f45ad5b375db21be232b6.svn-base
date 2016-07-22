@@ -1,0 +1,90 @@
+/**
+*	Copyright © 1997 - 2016 Xinyi Tech. All Rights Reserved 
+*/
+package com.xinyi.xframe.dataserver_util;
+
+import java.io.UnsupportedEncodingException;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.alibaba.fastjson.JSON;
+import com.xinyi.xframe.dataserver_util.common.HttpHelper;
+import com.xinyi.xframe.dataserver_util.common.ResponseContent;
+
+/**
+ * 功能说明：
+ * 
+ * TestGetLogInfoDataUtil.java
+ * 
+ * Original Author: liangliangl.jia,2016年3月18日上午8:53:31
+ * 
+ * Copyright (C)1997-2016 深圳信义科技 All rights reserved.
+ */
+public class TestGetLogInfoDataUtil {
+	
+	public static void testQueryByName(){
+		Map<String, Object> paramsMap = new IdentityHashMap<String, Object>();
+
+		String url =  "http://10.235.156.102:8090/log/query";
+		paramsMap.put("tableName", "user_operate");
+		paramsMap.put("columnName", "user_name");
+		paramsMap.put("queryName", "liangliang.jia");
+		
+		ResponseContent ret = HttpHelper.postEntity(url, paramsMap);
+		String result=null;
+		try {
+			result = ret.getContent();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		System.out.println(result);
+		List<Map> jsonList =JSON.parseArray(result, Map.class);
+		for(Map<String,Object> map  :jsonList){
+			Set<String> keys = map.keySet();
+			for(String key : keys){
+				System.out.println( key + "  ： " + map.get(key) );
+			}
+		}
+		
+	}
+	
+	public static void testQueryByUserId(){
+		Map<String, Object> paramsMap = new IdentityHashMap<String, Object>();
+
+		String url =  "http://10.235.156.102:8090/log/query";
+		paramsMap.put("tableName", "user_operate");
+		paramsMap.put("columnName", "user_id");
+		paramsMap.put("queryName", "0096000795");
+		
+		ResponseContent ret = HttpHelper.postEntity(url, paramsMap);
+		String result=null;
+		try {
+			result = ret.getContent();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		String resultJson  = null;
+		try {
+			resultJson = new String(result.getBytes(),"gb2312");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		System.out.println(resultJson);
+		List<Map> jsonList =JSON.parseArray(resultJson, Map.class);
+		for(Map<String,Object> map  :jsonList){
+			Set<String> keys = map.keySet();
+			for(String key : keys){
+				System.out.println( key + "  : " + map.get(key) );
+			}
+		}
+		
+	}
+	//批量插入数据记录测试
+		public static void main(String[] args) {
+			//testQueryByName();	//根据用户名进行查询
+			testQueryByUserId(); //根据用户ID进行查询
+			
+		}
+}

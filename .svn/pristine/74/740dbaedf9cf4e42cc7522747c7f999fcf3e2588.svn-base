@@ -1,0 +1,85 @@
+/**
+*	Copyright © 1997 - 2016 Xinyi Tech. All Rights Reserved 
+*/
+package com.xinyi.xframe.dataserver_util;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.alibaba.fastjson.JSON;
+import com.xinyi.xframe.constant.Constant;
+import com.xinyi.xframe.dataserver_util.common.HttpHelper;
+import com.xinyi.xframe.dataserver_util.common.ResponseContent;
+import com.xinyi.xframe.model.LogParams;
+
+/**
+ * 功能说明：
+ * 
+ * TestPostLogInfoData.java
+ * 
+ * Original Author: liangliangl.jia,2016年3月19日上午11:28:18
+ * 
+ * Copyright (C)1997-2016 深圳信义科技 All rights reserved.
+ */
+public class TestPostLogInfoData {
+	
+	public static void testPutLogData(LogParams params) throws UnsupportedEncodingException{
+		
+		Map<String, Object> paramsMap = new IdentityHashMap<String, Object>();
+		Map<String,Object> record = new HashMap<String, Object>();
+		record.put(Constant.TYPE,params.getType());
+		record.put(Constant.OPERATION, params.getOperation());
+		record.put(Constant.USER_ID, params.getUser_id());
+		record.put(Constant.USER_NAME,params.getUser_name());
+		
+		record.put(Constant.RECORD_FROM_ID, params.getRecord_from_id());
+		record.put(Constant.REMARK,params.getRemark());
+		record.put(Constant.XDATA_RKSJ, params.getXdata_rksj());
+		
+		List<Map<String, Object>> records = new ArrayList<Map<String,Object>>();
+		records.add(record);
+		paramsMap.put(Constant.TABLENAME, params.getTableName());
+		paramsMap.put(Constant.COLUMNNAMES, params.getColumnNames());
+		paramsMap.put(Constant.RECORD_FROM_NAME, params.getRecord_from_name());
+		paramsMap.put(Constant.RECORDS, JSON.toJSONString(records));
+		//String log=JSON.toJSONString(paramsMap);
+		
+		
+		ResponseContent ret = HttpHelper.postEntity(params.getUrl(), paramsMap);
+		System.out.println("status code:"+ret.getStatusCode());
+	}
+
+	public static void main(String[] args) throws UnsupportedEncodingException {
+		LogParams params=new LogParams();
+		String url =  "http://10.235.156.103:8091/log";
+		String tableName = "user_operate";
+		String columnNames ="type;operation;user_id;user_name;record_from;remark;xdata_rksj";
+		String record_from_id ="0013";
+		Map<String,Object> record = new HashMap<String, Object>();
+		
+		record.put("type", "01");
+		record.put("operation", "{\"from\" : 0,\"size\" : 10,\"query\" : {\"bool\" : {\"must\" : {  \"wildcard\" : {\"car_id\" : {\"wildcard\" : \"粤E1111\"}} }}}}");
+		record.put("user_id", "0096000144");
+		record.put("user_name", "tom");
+		
+		record.put("record_from_name", "xdata_server_provider");
+		record.put("remark", "query for data");
+		record.put("xdata_rksj", "2016-03-22 11:48:23");
+		params.setUrl(url);
+		params.setTableName(tableName);
+		params.setColumnNames(columnNames);
+		params.setRecord_from_id(record_from_id);
+		params.setType("01");
+		params.setOperation("{\"from\" : 0,\"size\" : 10,\"query\" : {\"bool\" : {\"must\" : {  \"wildcard\" : {\"car_id\" : {\"wildcard\" : \"粤E1111\"}} }}}}");
+		params.setUser_id("0096000188");
+		params.setUser_name("tom");
+		params.setRecord_from_name("xdata_server_provider");
+		params.setRemark("query for data");
+		params.setXdata_rksj("2016-03-22 11:48:23");
+		testPutLogData(params);
+	}
+}

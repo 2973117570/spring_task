@@ -1,0 +1,287 @@
+/*
+ * Copyright 2014-2015 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.shengkai.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.xinyi.xframe.dataserver_util.common;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.FileBody;
+
+/**
+ * 功能说明：HTTP工具类，封装HttpClient4.3.x来对外提供简化的HTTP请求
+ * 
+ * HttpHelper.java
+ * 
+ * Original Author: liangliang.jia,2015年9月14日下午8:23:13
+ * 
+ * Copyright (C)1997-2015 深圳信义科技 All rights reserved.
+ */
+
+public class HttpHelper {
+	private static Integer socketTimeout = 5000;
+	private static Integer connectTimeout = 600000;
+	private static Integer connectionRequestTimeout = 5000;
+
+	/**
+	 * 使用Get方式 根据URL地址，获取ResponseContent对象
+	 * 
+	 * @param url
+	 *            完整的URL地址
+	 * @return ResponseContent 如果发生异常则返回null，否则返回ResponseContent对象
+	 */
+	public static ResponseContent getUrlRespContent(String url) {
+		HttpClientWrapper hw = new HttpClientWrapper(connectionRequestTimeout, connectTimeout, socketTimeout);
+		ResponseContent response = null;
+		try {
+			response = hw.getResponse(url);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	/**
+	 * 使用Get方式 根据URL地址，获取ResponseContent对象
+	 * 
+	 * @param url
+	 *            完整的URL地址
+	 * @param urlEncoding
+	 *            编码，可以为null
+	 * @return ResponseContent 如果发生异常则返回null，否则返回ResponseContent对象
+	 */
+	public static ResponseContent getUrlRespContent(String url, String urlEncoding) {
+		HttpClientWrapper hw = new HttpClientWrapper(connectionRequestTimeout, connectTimeout, socketTimeout);
+		ResponseContent response = null;
+		try {
+			response = hw.getResponse(url, urlEncoding);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	/**
+	 * 将参数拼装在url中，进行post请求。
+	 * 
+	 * @param url
+	 * @return
+	 */
+	public static ResponseContent postUrl(String url) {
+		HttpClientWrapper hw = new HttpClientWrapper();
+		ResponseContent ret = null;
+		try {
+			setParams(url, hw);
+			ret = hw.postNV(url);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	private static void setParams(String url, HttpClientWrapper hw) {
+		String[] paramStr = url.split("[?]", 2);
+		if (paramStr == null || paramStr.length != 2) {
+			return;
+		}
+		String[] paramArray = paramStr[1].split("[&]");
+		if (paramArray == null) {
+			return;
+		}
+		for (String param : paramArray) {
+			if (param == null || "".equals(param.trim())) {
+				continue;
+			}
+			String[] keyValue = param.split("[=]", 2);
+			if (keyValue == null || keyValue.length != 2) {
+				continue;
+			}
+			hw.addNV(keyValue[0], keyValue[1]);
+		}
+	}
+
+	/**
+	 * 上传文件（包括图片）
+	 * 
+	 * @param url
+	 *            请求URL
+	 * @param paramsMap
+	 *            参数和值
+	 * @return
+	 */
+	public static ResponseContent postEntity(String url, Map<String, Object> paramsMap) {
+		HttpClientWrapper hw = new HttpClientWrapper();
+		ResponseContent ret = null;
+		try {
+			setParams(url, hw);
+			Iterator<String> iterator = paramsMap.keySet().iterator();
+			while (iterator.hasNext()) {
+				String key = iterator.next();
+				Object value = paramsMap.get(key);
+				if (value instanceof File) {
+					FileBody fileBody = new FileBody((File) value);
+					hw.getContentBodies().add(fileBody);
+				} else if (value instanceof byte[]) {
+					byte[] byteVlue = (byte[]) value;
+					ByteArrayBody byteArrayBody = new ByteArrayBody(byteVlue, key);
+					hw.getContentBodies().add(byteArrayBody);
+				} else {
+					if (value != null && !"".equals(value)) {
+						hw.addNV(key, String.valueOf(value));
+					} else {
+						hw.addNV(key, "");
+					}
+				}
+			}
+			ret = hw.postEntity(url);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	/**
+	 * 上传文件（包括图片），重复key的参数IdentityHashMap 已经排序
+	 * 
+	 * @param url
+	 *            请求URL
+	 * @param paramsMap
+	 *            参数和值
+	 * @return
+	 */
+	public static ResponseContent postEntityList(String url, IdentityHashMap<String, Object> maps) {
+		HttpClientWrapper hw = new HttpClientWrapper();
+		ResponseContent ret = null;
+		try {
+			setParams(url, hw);
+			ArrayList<IdentityHashMap<String, Object>> maplist = IdentityHashMapOperate.getValues(maps);
+			for (IdentityHashMap<String, Object> paramsMap : maplist) {
+				Iterator<String> iterator = paramsMap.keySet().iterator();
+				while (iterator.hasNext()) {
+					String key = iterator.next();
+					Object value = paramsMap.get(key);
+					if (value instanceof File) {
+						FileBody fileBody = new FileBody((File) value);
+						hw.getContentBodies().add(fileBody);
+					} else if (value instanceof byte[]) {
+						byte[] byteVlue = (byte[]) value;
+						ByteArrayBody byteArrayBody = new ByteArrayBody(byteVlue, key);
+						hw.getContentBodies().add(byteArrayBody);
+					} else {
+						if (value != null && !"".equals(value)) {
+							hw.addNV(key, String.valueOf(value));
+						} else {
+							hw.addNV(key, "");
+						}
+					}
+				}
+			}
+
+			ret = hw.postEntity(url);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	/**
+	 * 使用post方式，发布对象转成的json给Rest服务。
+	 * 
+	 * @param url
+	 * @param jsonBody
+	 * @return
+	 */
+	public static ResponseContent postJsonEntity(String url, String jsonBody) {
+		return postEntity(url, jsonBody, "application/json");
+	}
+
+	/**
+	 * 使用post方式，发布对象转成的xml给Rest服务
+	 * 
+	 * @param url
+	 *            URL地址
+	 * @param xmlBody
+	 *            xml文本字符串
+	 * @return ResponseContent 如果发生异常则返回空，否则返回ResponseContent对象
+	 */
+	public static ResponseContent postXmlEntity(String url, String xmlBody) {
+		return postEntity(url, xmlBody, "application/xml");
+	}
+
+	private static ResponseContent postEntity(String url, String body, String contentType) {
+		HttpClientWrapper hw = new HttpClientWrapper();
+		ResponseContent ret = null;
+		try {
+			hw.addNV("body", body);
+			ret = hw.postNV(url, contentType);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	public static void main(String[] args) {
+		// testGet();
+		testUploadFile();
+	}
+
+	// test
+	public static void testGet() {
+		String url = "http://www.baidu.com/";
+		ResponseContent responseContent = getUrlRespContent(url);
+		try {
+			System.out.println(responseContent.getContent());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// test
+	public static void testUploadFile() {
+		try {
+			String url = "http://localhost:8090/upload/post";
+			Map<String, Object> paramsMap = new HashMap<String, Object>();
+			paramsMap.put("userName", "trans");
+			paramsMap.put("password", "trans");
+
+			File file = new File("D:\\temp\\trans.bmp");
+			FileInputStream fin = null;
+			byte[] data = null;
+			try {
+				fin = new FileInputStream(file);
+				data = new byte[fin.available()];
+				fin.read(data);
+				fin.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			paramsMap.put("file", data);
+
+			// paramsMap.put("filePath", new File(
+			// "D:\\temp\\oracle_info.png"));
+			ResponseContent ret = postEntity(url, paramsMap);
+			System.out.println(ret.getContent());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

@@ -1,0 +1,44 @@
+/**
+*	Copyright © 1997 - 2016 Xinyi Tech. All Rights Reserved 
+*/
+package com.xinyi.xframe.dataserver_util.common;
+
+/**
+ * 功能说明：
+ * 
+ * LoggerConstant.java
+ * 
+ * Original Author: liangliangl.jia,2016年3月23日下午3:23:38
+ * 
+ * Copyright (C)1997-2016 深圳信义科技 All rights reserved.
+ */
+public interface LoggerConstant {
+	
+	public static final String LOGGER_PARAM_USER_ID = "user_id";
+	
+	public static final String LOGGER_PARAM_USER_NAME = "user_name";
+	
+	public static final String LOGGER_PARAM_START_TIME ="start_time";
+	
+	public static final String LOGGER_PARAM_END_TIME = "end_time";
+	
+	public static final String LOGGER_PARAM_TYPE = "type";
+	
+	public static final String LOGGER_PARAM_REMARK = "remark";
+	
+	public static final String LOGGER_PARAM_BROWNAME = "browname";
+	
+	public static final String LOGGER_PARAM_SYSTEMNAME = "systemname";
+	
+	public static final String LOGGER_PARAM_XDATA_RKSJ = "xdata_rksj";
+	
+	public static final String LOGGER_PARAM_OPERATION = "operation";
+	
+	public static final String LOGGER_PARAM_RECORD_FROM ="record_from";
+	
+	public static final String LOGGER_PARAM_ROW_KEY = "row";
+	
+	public static final String LOGGER_PARAM_INFO = "info";
+	
+	public static final String LOGGER_PARAM_USER_IP = "user_ip";
+}
